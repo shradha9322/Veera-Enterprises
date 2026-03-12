@@ -29,7 +29,7 @@ const CreateQuotation = ({ selectedClient, setCurrentPage }) => {
     client: selectedClient?.name || "",
     clientAddress: "",
     clientEmail: "",
-    clientPhone: "",
+    clientPhone: "", 
     preparedBy: "Development Team",
     documentType: "Commercial Quotation",
     version: "1.0",
