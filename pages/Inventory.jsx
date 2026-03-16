@@ -88,28 +88,37 @@ const Inventory = ({ products, setProducts, logs, setLogs }) => {
   const [bulkStatus, setBulkStatus] = useState({});
   const fileInputRef = useRef(null);
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    const product = {
-      ...newProd,
-      id: `p${Date.now()}`,
-      variants: newProd.variants.length > 0 ? newProd.variants.map((v, i) => ({ ...v, id: `v${Date.now()}-${i}` })) : undefined
-    };
-    await api.addProduct(product);
-    await setProducts(null);
-    setIsAddModalOpen(false);
-    setNewProd({
-      name: '',
-      category: StockCategory.PURIFIER,
-      priceRetail: 0,
-      priceWholesale: 0,
-      stock: 0,
-      lowStockThreshold: 5,
-      gstRate: 18,
-      variants: []
-    });
+  const handleAddProduct = (e) => {
+  e.preventDefault();
+
+  const product = {
+    ...newProd,
+    id: `p${Date.now()}`,
+    variants:
+      newProd.variants.length > 0
+        ? newProd.variants.map((v, i) => ({
+            ...v,
+            id: `v${Date.now()}-${i}`
+          }))
+        : undefined
   };
 
+  // add product to existing list
+  setProducts(prev => [...prev, product]);
+
+  setIsAddModalOpen(false);
+
+  setNewProd({
+    name: '',
+    category: StockCategory.PURIFIER,
+    priceRetail: 0,
+    priceWholesale: 0,
+    stock: 0,
+    lowStockThreshold: 5,
+    gstRate: 18,
+    variants: []
+  });
+};
   const handleAdjustStock = async () => {
     if (!selectedProduct || adjAmount <= 0) return;
 

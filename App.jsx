@@ -24,14 +24,22 @@ const DEFAULT_SETTINGS = {
   lowStockAlert: 5,
 };
 
+
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [userRole, setUserRole] = useState("ADMIN");
   const [currentPage, setCurrentPage] = useState("dashboard");
 
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [products, setProducts] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState(() => {
+  const savedProducts = localStorage.getItem("products");
+  return savedProducts ? JSON.parse(savedProducts) : [];
+});
+  const [customers, setCustomers] = useState(() => {
+  const saved = localStorage.getItem("customers");
+  return saved ? JSON.parse(saved) : [];
+});
   const [invoices, setInvoices] = useState([]);
   const [stockLogs, setStockLogs] = useState([]);
   const [serviceRecords, setServiceRecords] = useState([]);
@@ -45,6 +53,15 @@ const App = () => {
   useEffect(() => {
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+  localStorage.setItem("customers", JSON.stringify(customers));
+}, [customers]);
+
+
+useEffect(() => {
+  localStorage.setItem("products", JSON.stringify(products));
+}, [products]);
 
   const handleLogin = (role) => {
     setUserRole(role);
@@ -62,6 +79,7 @@ const handleReset = () => {
   setStockLogs([]);
   setServiceRecords([]);
 };
+
 
   if (!isAuthenticated) {
     return <Login onLogin={handleLogin} />;

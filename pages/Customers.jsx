@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   UserPlus, 
@@ -21,16 +20,20 @@ const CustomerType = {
 };
 // import { api } from '../api';
 
+const Customers = ({ customers, setCustomers }) => {
 
+   
 
-const Customers= ({ customers, setCustomers }) => {
+  useEffect(() => {
+    localStorage.setItem("customers", JSON.stringify(customers));
+  }, [customers]);
+
   const [filter, setFilter] = useState('ALL');
   const [regionFilter, setRegionFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   // New Customer Form State
   const [newCust, setNewCust] = useState({
@@ -42,34 +45,60 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     gstIn: ''
   });
 
-  const handleAddCustomer = async (e) => {
-    e.preventDefault();
-    const customer = {
-      ...newCust,
-      id: `c${Date.now()}`,
-      totalPurchase: 0,
-      outstanding: 0,
-    };
-    await api.addCustomer(customer);
-    await setCustomers(null);
-    setIsModalOpen(false);
-    setNewCust({ name: '', phone: '', type: CustomerType.RETAIL, address: '', region: 'KOLHAPUR', gstIn: '' });
+const handleAddCustomer = (e) => {
+  e.preventDefault();
+
+  const customer = {
+    ...newCust,
+    id: `c${Date.now()}`,
+    totalPurchase: 0,
+    outstanding: 0,
   };
 
-  const handleUpdateCustomer = async (e)=>{
-    e.preventDefault();
+  // add customer to state
+  setCustomers(prev => [...prev, customer]);
 
-    if(editCustomer)return;
-    await api.updateCustomer(editCustomer.id,editCustomer);
+  setIsModalOpen(false);
 
-    await setCustomers(null);
+  setNewCust({
+    name: '',
+    phone: '',
+    type: CustomerType.RETAIL,
+    address: '',
+    region: 'KOLHAPUR',
+    gstIn: ''
+  });
+};
 
-    setIsEditModalOpen(false);
+const handleUpdateCustomer = (e) => {
+  e.preventDefault();
 
+  if (!editCustomer) return;
 
-  };
+  setCustomers(prev =>
+    prev.map(c =>
+      c.id === editCustomer.id ? editCustomer : c
+    )
+  );
 
-  const filteredCustomers = customers.filter(c => {
+  setIsEditModalOpen(false);
+};
+
+// const handleUpdateCustomer = (e) => {
+//   e.preventDefault();
+
+//   if (!editCustomer) return;
+
+//   setCustomers(prev =>
+//     prev.map(c =>
+//       c.id === editCustomer.id ? editCustomer : c
+//     )
+//   );
+
+//   setIsEditModalOpen(false);
+// };
+
+  const filteredCustomers = (customers||[]).filter(c => {
     const matchesFilter = filter === 'ALL' || c.type === filter;
     const matchesRegion = regionFilter === 'ALL' || c.region === regionFilter;
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -202,6 +231,7 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{customer.type}</span>
                   </div>
                 </div>
+
                 <button onClick={()=>{
                    setEditCustomer(customer);
                  setIsEditModalOpen(true);
@@ -260,6 +290,7 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
               <h4 className="font-bold text-lg">Register New Customer</h4>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full"><X size={20} /></button>
             </div>
+
             <form onSubmit={handleAddCustomer} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -296,6 +327,43 @@ const [isEditModalOpen, setIsEditModalOpen] = useState(false);
             </form>
           </div>
         </div>
+      )}
+      {isEditModalOpen && editCustomer && (
+
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+
+<div className="bg-white p-6 rounded-xl w-[400px]">
+
+<h2 className="text-lg font-bold mb-4">Edit Customer</h2>
+
+<form onSubmit={handleUpdateCustomer} className="space-y-3">
+
+<input
+className="w-full border p-2 rounded"
+value={editCustomer.name}
+onChange={(e)=>setEditCustomer({...editCustomer,name:e.target.value})}
+/>
+
+<input
+className="w-full border p-2 rounded"
+value={editCustomer.phone}
+onChange={(e)=>setEditCustomer({...editCustomer,phone:e.target.value})}
+/>
+
+<textarea
+className="w-full border p-2 rounded"
+value={editCustomer.address}
+onChange={(e)=>setEditCustomer({...editCustomer,address:e.target.value})}
+/>
+
+<button className="bg-blue-600 text-white px-4 py-2 rounded w-full">
+Update Customer
+</button>
+
+</form>
+
+</div>
+</div>
       )}
     </div>
   );
